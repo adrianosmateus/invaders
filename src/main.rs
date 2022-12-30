@@ -65,9 +65,12 @@ fn main() -> Result <(), Box<dyn Error>> {
     });
 
     let mut player = Player::new();
+    let mut instant = Instant::now();
 
     // Loop principal
     'gameloop: loop {
+        let delta = instant.elapsed();
+        instant = Instant::now();
         let mut curr_frame = new_frame();
 
         while event::poll(Duration::default())? {
@@ -77,6 +80,11 @@ fn main() -> Result <(), Box<dyn Error>> {
                     // Finaliza o jogo se for esc ou q
                     KeyCode::Left => player.move_left(),
                     KeyCode::Right => player.move_right(),
+                    KeyCode::Char(' ') | KeyCode::Enter => {
+                        if player.shoot() {
+                            audio.play("pew");
+                        }
+                    }
                     KeyCode::Esc | KeyCode::Char('q') => {
                         audio.play("lose");
                         break 'gameloop;
@@ -85,6 +93,8 @@ fn main() -> Result <(), Box<dyn Error>> {
                 }
             }
         }
+
+        player.update(delta);
 
         player.draw(&mut curr_frame);
         let _ = render_tx.send(curr_frame);
