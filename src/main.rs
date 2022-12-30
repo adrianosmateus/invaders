@@ -22,12 +22,12 @@ fn main() -> Result <(), Box<dyn Error>> {
     let mut audio = Audio::new();
 
     // Carrega os arquivos na pasta do projeto associando um nome a cada um deles
-    audio.add("explode", "explode.wav");
-    audio.add("lose", "lose.wav");
-    audio.add("move", "move.wav");
-    audio.add("pew", "pew.wav");
-    audio.add("startup", "startup.wav");
-    audio.add("win", "win.wav");
+    audio.add("explode", "sounds/explode.wav");
+    audio.add("lose", "sounds/lose.wav");
+    audio.add("move", "sounds/move.wav");
+    audio.add("pew", "sounds/pew.wav");
+    audio.add("startup", "sounds/startup.wav");
+    audio.add("win", "sounds/win.wav");
 
     // Executa o audio 'startup'
     audio.play("startup");
