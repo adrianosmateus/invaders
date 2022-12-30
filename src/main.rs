@@ -15,6 +15,7 @@ use std::{
 use mpsc::*;
 use invaders::frame::{self, new_frame, Drawable, Frame};
 use invaders::render::{self};
+use invaders::player::Player;
 
 fn main() -> Result <(), Box<dyn Error>> {
     // Inicia a library para execução de audio
@@ -63,15 +64,19 @@ fn main() -> Result <(), Box<dyn Error>> {
         }
     });
 
+    let mut player = Player::new();
+
     // Loop principal
     'gameloop: loop {
-        let curr_frame = new_frame();
+        let mut curr_frame = new_frame();
 
         while event::poll(Duration::default())? {
             // Detecta uma tecla pressionada pelo usuário e executa uma ação
             if let Event::Key(key_event) = event::read()? {
                  match key_event.code {
                     // Finaliza o jogo se for esc ou q
+                    KeyCode::Left => player.move_left(),
+                    KeyCode::Right => player.move_right(),
                     KeyCode::Esc | KeyCode::Char('q') => {
                         audio.play("lose");
                         break 'gameloop;
@@ -81,6 +86,7 @@ fn main() -> Result <(), Box<dyn Error>> {
             }
         }
 
+        player.draw(&mut curr_frame);
         let _ = render_tx.send(curr_frame);
         thread::sleep(Duration::from_millis(1));
     }
