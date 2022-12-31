@@ -13,7 +13,7 @@ use std::{
 };
 
 use mpsc::*;
-use invaders::frame::{self, new_frame, Drawable, Frame};
+use invaders::{frame::{self, new_frame, Drawable, Frame}, invaders::Invaders};
 use invaders::render::{self};
 use invaders::player::Player;
 
@@ -66,6 +66,7 @@ fn main() -> Result <(), Box<dyn Error>> {
 
     let mut player = Player::new();
     let mut instant = Instant::now();
+    let mut invaders = Invaders::new();
 
     // Loop principal
     'gameloop: loop {
@@ -95,8 +96,12 @@ fn main() -> Result <(), Box<dyn Error>> {
         }
 
         player.update(delta);
+        if invaders.update(delta) {
+            audio.play("move");
+        }
 
         player.draw(&mut curr_frame);
+        invaders.draw(&mut curr_frame);
         let _ = render_tx.send(curr_frame);
         thread::sleep(Duration::from_millis(1));
     }
