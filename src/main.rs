@@ -64,11 +64,12 @@ fn main() -> Result <(), Box<dyn Error>> {
         }
     });
 
+    // Iniciando elementos do jogo(jogador, contador de tempo e invasores)
     let mut player = Player::new();
     let mut instant = Instant::now();
     let mut invaders = Invaders::new();
 
-    // Loop principal
+    // Loop principal que só será interrompido na derrota ou vitória
     'gameloop: loop {
         let delta = instant.elapsed();
         instant = Instant::now();
@@ -78,17 +79,17 @@ fn main() -> Result <(), Box<dyn Error>> {
             // Detecta uma tecla pressionada pelo usuário e executa uma ação
             if let Event::Key(key_event) = event::read()? {
                  match key_event.code {
-                    // Finaliza o jogo se for esc ou q
+                     // Finaliza o jogo se for esc ou q
+                     KeyCode::Esc | KeyCode::Char('q') => {
+                         audio.play("lose");
+                         break 'gameloop;
+                     }
                     KeyCode::Left => player.move_left(),
                     KeyCode::Right => player.move_right(),
                     KeyCode::Char(' ') | KeyCode::Enter => {
                         if player.shoot() {
                             audio.play("pew");
                         }
-                    }
-                    KeyCode::Esc | KeyCode::Char('q') => {
-                        audio.play("lose");
-                        break 'gameloop;
                     }
                     _ => {}
                 }
@@ -99,11 +100,24 @@ fn main() -> Result <(), Box<dyn Error>> {
         if invaders.update(delta) {
             audio.play("move");
         }
+        if player.detect_hits(&mut invaders) {
+            audio.play("explode");
+        }
 
         player.draw(&mut curr_frame);
         invaders.draw(&mut curr_frame);
         let _ = render_tx.send(curr_frame);
         thread::sleep(Duration::from_millis(1));
+
+        // Vitória ou derrota
+        if invaders.all_killed() {
+            audio.play("win");
+            break 'gameloop;
+        }
+        if invaders.reached_bottom() {
+            audio.play("lose");
+            break 'gameloop;
+        }
     }
 
     drop(render_tx);
